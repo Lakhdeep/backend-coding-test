@@ -8,12 +8,22 @@
   },
   "scripts": {
     "test": "nyc mocha tests",
-    "start": "node index.js",
+    "start": "NODE_ENV=dev node index.js",
     "lint": "eslint ./"
   },
   "pre-push": [
     "test"
   ],
+  "nyc": {
+    "check-coverage": true,
+    "branches": 80,
+    "lines": 80,
+    "statements": 80,
+    "exclude": [
+      "logger/*",
+      "tests/*"
+    ]
+  },
   "keywords": [
     "Xendit"
   ],
@@ -24,7 +34,8 @@
     "express": "^4.16.4",
     "sqlite3": "^4.0.6",
     "swagger-jsdoc": "^6.1.0",
-    "swagger-ui-express": "^4.1.6"
+    "swagger-ui-express": "^4.1.6",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "eslint": "^7.29.0",

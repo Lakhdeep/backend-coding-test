@@ -6,3 +6,6 @@ node_modules
 
 # Ignore nyc_output file
 .nyc_output
+
+# Ignore logs
+logs
