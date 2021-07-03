@@ -174,6 +174,17 @@ module.exports = (db) => {
    *  get:
    *    tags: [Ride]
    *    summary: get all rides
+   *    parameters:
+   *     - in: query
+   *       name: page
+   *       schema:
+   *         type: integer
+   *       description: The number of items to skip before starting to collect the result set
+   *     - in: query
+   *       name: limit
+   *       schema:
+   *         type: integer
+   *       description: The numbers of items to return
    *    responses:
    *      200:
    *        description: query executed successfully
@@ -186,27 +197,35 @@ module.exports = (db) => {
    *
    */
   app.get('/rides', (req, res) => {
-    db.all('SELECT * FROM Rides', function (err, rows) {
-      if (err) {
-        logger.error(err)
-        return res.send({
-          error_code: 'SERVER_ERROR',
-          message: 'Unknown error',
-        })
-      }
+    let { limit = 10, page = 1 } = req.query
 
-      if (rows.length === 0) {
-        logger.error(
-          new Error('RIDES_NOT_FOUND_ERROR: Could not find any rides')
-        )
-        return res.send({
-          error_code: 'RIDES_NOT_FOUND_ERROR',
-          message: 'Could not find any rides',
-        })
-      }
+    if (limit < 1 || limit > 50) limit = 10
+    if (page < 1) page = 1
 
-      res.send(rows)
-    })
+    db.all(
+      `SELECT * FROM Rides LIMIT ${limit} OFFSET ${(page - 1) * limit}`,
+      function (err, rows) {
+        if (err) {
+          logger.error(err)
+          return res.send({
+            error_code: 'SERVER_ERROR',
+            message: 'Unknown error',
+          })
+        }
+
+        if (rows.length === 0) {
+          logger.error(
+            new Error('RIDES_NOT_FOUND_ERROR: Could not find any rides')
+          )
+          return res.send({
+            error_code: 'RIDES_NOT_FOUND_ERROR',
+            message: 'Could not find any rides',
+          })
+        }
+
+        res.send(rows)
+      }
+    )
   })
 
   /**

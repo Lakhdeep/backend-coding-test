@@ -215,8 +215,33 @@ describe('API tests', () => {
   })
 
   describe('GET /rides', () => {
-    it('should return all rides', async () => {
-      const response = await request(app).get('/rides')
+    it('should return rides with invalid page and limit values', async () => {
+      const response = await request(app)
+        .get('/rides')
+        .query({ limit: -1, page: -1 })
+      expect(response.status).to.equal(200)
+      expect(response.body).to.be.an('array')
+
+      const attributes = response.body[0]
+      expect(attributes).to.include.keys(
+        'rideID',
+        'startLat',
+        'startLong',
+        'endLat',
+        'endLong',
+        'riderName',
+        'driverName',
+        'driverVehicle',
+        'created'
+      )
+    })
+  })
+
+  describe('GET /rides', () => {
+    it('should return rides', async () => {
+      const response = await request(app)
+        .get('/rides')
+        .query({ limit: 10, page: 1 })
       expect(response.status).to.equal(200)
       expect(response.body).to.be.an('array')
 
