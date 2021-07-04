@@ -5,7 +5,7 @@ const port = 8010
 const logger = require('./logger')
 
 const sqlite3 = require('sqlite3').verbose()
-const db = new sqlite3.Database(':memory:')
+const { open } = require('sqlite')
 
 const buildSchemas = require('./src/schemas')
 
@@ -31,9 +31,11 @@ const swaggerOptions = {
 
 const swaggerSpecs = swaggerJsDoc(swaggerOptions)
 
-db.serialize(() => {
-  buildSchemas(db)
-
+open({
+  filename: ':memory:',
+  driver: sqlite3.Database,
+}).then(async (db) => {
+  await buildSchemas(db)
   const app = require('./src/app')(db)
 
   app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs))
