@@ -168,9 +168,11 @@ module.exports = (db) => {
     if (page < 1) page = 1
 
     try {
-      const rows = await db.all(
-        `SELECT * FROM Rides LIMIT ${limit} OFFSET ${(page - 1) * limit}`
-      )
+      const offset = (page - 1) * limit
+      const rows = await db.all('SELECT * FROM Rides LIMIT ? OFFSET ?', [
+        limit,
+        offset,
+      ])
       if (rows.length === 0) {
         logger.error(
           new Error('RIDES_NOT_FOUND_ERROR: Could not find any rides')
@@ -217,9 +219,9 @@ module.exports = (db) => {
    */
   app.get('/rides/:id', async (req, res) => {
     try {
-      const rows = await db.all(
-        `SELECT * FROM Rides WHERE rideID='${req.params.id}'`
-      )
+      const rows = await db.all('SELECT * FROM Rides WHERE rideID=?', [
+        req.params.id,
+      ])
 
       if (rows.length === 0) {
         logger.error(
