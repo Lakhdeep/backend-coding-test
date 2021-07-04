@@ -3,29 +3,27 @@
 const request = require('supertest')
 
 const sqlite3 = require('sqlite3').verbose()
-const db = new sqlite3.Database(':memory:')
+const { open } = require('sqlite')
+// const db = new sqlite3.Database(':memory:')
 
-const app = require('../src/app')(db)
+let app //= require('../src/app')(db)
 const buildSchemas = require('../src/schemas')
 
 const { expect } = require('chai')
 
 describe('API tests', () => {
   before((done) => {
-    db.serialize(async (err) => {
-      if (err) {
-        return done(err)
-      }
-
-      buildSchemas(db)
-
+    open({
+      filename: ':memory:',
+      driver: sqlite3.Database,
+    }).then(async (db) => {
+      await buildSchemas(db)
+      app = require('../src/app')(db)
       var values = [1.1, 2.2, 3.3, 4.4, 'Night Rider', 'Screw Driver', 'Ford']
-
       await db.run(
         'INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)',
         values
       )
-
       done()
     })
   })
@@ -260,7 +258,7 @@ describe('API tests', () => {
     })
   })
 
-  describe('GET /rides', () => {
+  describe('GET /rides/{id}', () => {
     it('should should return error when invalid id', async () => {
       const response = await request(app).get('/rides/-1')
       expect(response.status).to.equal(200)
@@ -272,7 +270,7 @@ describe('API tests', () => {
     })
   })
 
-  describe('GET /rides', () => {
+  describe('GET /rides/{id}', () => {
     it('should return ride by id', async () => {
       const response = await request(app).get('/rides/1')
       expect(response.status).to.equal(200)
